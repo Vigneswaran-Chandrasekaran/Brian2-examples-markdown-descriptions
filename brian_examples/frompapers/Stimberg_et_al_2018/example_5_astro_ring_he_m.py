@@ -1,10 +1,25 @@
 """
 Modified:: line 21
 """
-from brian2 import *
-import brian2tools
 
-set_device('heexport', build_on_run=False)
+from brian2 import *
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
+
+
 """
 Modeling neuron-glia interactions with the Brian 2 simulator
 Marcel Stimberg, Dan F. M. Goodman, Romain Brette, Maurizio De Pittà
@@ -119,6 +134,3 @@ astro_mon = StateMonitor(astrocytes, variables=['C'], record=True)
 # Simulation run
 ################################################################################
 run(duration, report='text')
-
-
-device.build(debug=True)

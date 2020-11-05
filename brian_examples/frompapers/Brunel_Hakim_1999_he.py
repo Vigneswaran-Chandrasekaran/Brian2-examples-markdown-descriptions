@@ -1,7 +1,20 @@
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
+
 """
 Dynamics of a network of sparsely connected inhibitory current-based 
 integrate-and-fire neurons. Individual neurons fire irregularly at 
@@ -43,5 +56,3 @@ M = SpikeMonitor(group)
 LFP = PopulationRateMonitor(group)
 
 run(duration)
-
-device.build(debug=True)

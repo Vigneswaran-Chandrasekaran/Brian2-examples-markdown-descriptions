@@ -1,7 +1,19 @@
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, build_on_run=False, filename=args.filename)
 
 '''
 Inhibitory synaptic plasticity in a recurrent network model
@@ -106,4 +118,4 @@ run(1*second)
 eta = 1e-2          # Learning rate
 run(simtime-1*second, report='text')
 
-device.build(debug=True)
+device.build()

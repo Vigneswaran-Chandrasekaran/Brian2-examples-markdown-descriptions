@@ -2,11 +2,23 @@
 Modified for human read-able:
 Commented out store and restore statements
 """
-
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
+
 '''
 Reproduces Figure 12 (simplified three-compartment model) from the following
 paper:
@@ -177,5 +189,4 @@ voltages_somatic_dendritic = do_experiment(currents, somatic_density=1.7e-5*cm/s
                                            HH_currents=False)
 maxima_somatic = Quantity(voltages_somatic).max(axis=1)
 maxima_somatic_dendritic = Quantity(voltages_somatic_dendritic).max(axis=1)
-device.build(debug=True)
 

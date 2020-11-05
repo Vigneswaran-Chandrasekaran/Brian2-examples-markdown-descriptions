@@ -1,7 +1,21 @@
-from brian2 import *
-import brian2tools
+# modify cpp standalone
 
-set_device('heexport', build_on_run=False)
+from brian2 import *
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
 
 '''
 Morris-Lecar model
@@ -50,5 +64,3 @@ mon = StateMonitor(neuron, ['V', 'n'], record=True)
 
 run_time = 220*ms
 run(run_time)
-
-device.build(debug=True)

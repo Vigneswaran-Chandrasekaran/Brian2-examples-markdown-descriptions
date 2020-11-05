@@ -15,32 +15,31 @@ args = parser.parse_args()
 custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
 set_device('markdown', expander=custom, filename=args.filename)
 
+#!/usr/bin/env python
+'''
+Neurons with gap junctions.
+'''
+from brian2 import *
 
-'''
-A model with adaptive threshold (increases with each spike)
-'''
+n = 10
+v0 = 1.05
+tau = 10*ms
 
 eqs = '''
-dv/dt = -v/(10*ms) : volt
-dvt/dt = (10*mV-vt)/(15*ms) : volt
+dv/dt = (v0 - v + Igap) / tau : 1
+Igap : 1 # gap junction current
 '''
 
-reset = '''
-v = 0*mV
-vt += 3*mV
-'''
+neurons = NeuronGroup(n, eqs, threshold='v > 1', reset='v = 0',
+                      method='exact')
+neurons.v = 'i * 1.0 / (n-1)'
+trace = StateMonitor(neurons, 'v', record=[0, 5])
 
-IF = NeuronGroup(1, model=eqs, reset=reset, threshold='v>vt',
-                 method='exact')
-IF.vt = 10*mV
-PG = PoissonGroup(1, 500 * Hz)
+S = Synapses(neurons, neurons, '''
+             w : 1 # gap junction conductance
+             Igap_post = w * (v_pre - v_post) : 1 (summed)
+             ''')
+S.connect()
+S.w = .02
 
-C = Synapses(PG, IF, on_pre='v += 3*mV')
-C.connect()
-
-Mv = StateMonitor(IF, 'v', record=True)
-Mvt = StateMonitor(IF, 'vt', record=True)
-# Record the value of v when the threshold is crossed
-M_crossings = SpikeMonitor(IF, variables='v')
-
-run(2*second, report='text')
+run(500*ms)

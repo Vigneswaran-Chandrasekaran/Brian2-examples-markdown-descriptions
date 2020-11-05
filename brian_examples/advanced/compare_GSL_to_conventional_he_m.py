@@ -2,9 +2,21 @@
 Modified: lines 50, 51
 """
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename, build_on_run=False)
 
 '''
 Example using GSL ODE solvers with a variable time step and comparing it to the
@@ -110,5 +122,4 @@ else:
     print("This is %.1f times faster than the simulation with GSL's variable "
           "time step method." % (gsl.run_time / brian.run_time))
 
-
-device.build(debug=True)
+device.build()

@@ -2,9 +2,21 @@
 Modified: added run at l 37
 """
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
 
 '''
 Show the improved numerical accuracy when using the `exprel` function in rate equations.
@@ -36,4 +48,3 @@ neuron = NeuronGroup(1000, eqs)
 neuron.v = np.linspace(-50 - .5e-6, -50 + .5e-6, len(neuron))*mV
 
 run(100*ms)
-device.build(debug=True)

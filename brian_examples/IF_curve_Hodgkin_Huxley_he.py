@@ -1,7 +1,20 @@
 from brian2 import *
-import brian2tools
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
 
-set_device('heexport', build_on_run=False)
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
+
 
 '''
 Input-Frequency curve of a HH model.
@@ -45,9 +58,3 @@ group.I = '0.7*nA * i / num_neurons'
 monitor = SpikeMonitor(group)
 
 run(duration)
-
-
-
-
-device.build(debug=True)
-

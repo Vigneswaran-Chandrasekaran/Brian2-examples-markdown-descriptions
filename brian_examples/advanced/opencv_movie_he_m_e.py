@@ -1,3 +1,20 @@
+from brian2 import *
+from brian2tools import mdexport
+from brian2tools.mdexport import MdExpander
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--github_md', type=bool, default=False, help='Github md')
+parser.add_argument('--filename', type=str, default='', help='File name')
+parser.add_argument('--brian_verbose', type=bool, default=False,
+                    help='Brian verbose')
+
+args = parser.parse_args()
+
+custom = MdExpander(brian_verbose=args.brian_verbose, github_md=args.github_md)
+set_device('markdown', expander=custom, filename=args.filename)
+
 '''
 An example that uses a function from external C library (OpenCV in this case).
 Works for all C-based code generation targets (i.e. for cython and cpp_standalone
@@ -16,7 +33,7 @@ from brian2 import *
 defaultclock.dt = 1*ms
 prefs.codegen.target = 'cython'
 prefs.logging.std_redirection = False
-set_device('cpp_standalone', clean=True)
+#set_device('cpp_standalone', clean=True)
 filename = os.path.abspath('Megamind.avi')
 
 if not os.path.exists(filename):
@@ -104,33 +121,3 @@ G.run_regularly('I = video_input(column, row)',
 mon = SpikeMonitor(G)
 runtime = frame_count*time_between_frames
 run(runtime, report='text')
-
-# Avoid going through the whole Brian2 indexing machinery too much
-i, t, row, column = mon.i[:], mon.t[:], G.row[:], G.column[:]
-
-import matplotlib.animation as animation
-
-# TODO: Use overlapping windows
-stepsize = 100*ms
-def next_spikes():
-    step = next_spikes.step
-    if step*stepsize > runtime:
-        next_spikes.step=0
-        raise StopIteration()
-    spikes = i[(t>=step*stepsize) & (t<(step+1)*stepsize)]
-    next_spikes.step += 1
-    yield column[spikes], row[spikes]
-next_spikes.step = 0
-
-fig, ax = plt.subplots()
-dots, = ax.plot([], [], 'k.', markersize=2, alpha=.25)
-ax.set_xlim(0, width)
-ax.set_ylim(0, height)
-ax.invert_yaxis()
-def run(data):
-    x, y = data
-    dots.set_data(x, y)
-
-ani = animation.FuncAnimation(fig, run, next_spikes, blit=False, repeat=True,
-                              repeat_delay=1000)
-plt.show()
